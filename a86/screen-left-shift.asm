@@ -7,7 +7,7 @@ reset:
 
 init:
     mov di, si              ; Set the value to register `si`, this register will serve as the current index
-    add di, 158             ; Add the offset, so we reach the end
+    add di, 158             ; Add the offset, so we reach the end of the screen
     mov al, b[ds:di]        ; Copy the last character
 
 shift:
