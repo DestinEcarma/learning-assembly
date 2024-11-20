@@ -3,7 +3,7 @@ mov ds, 0b800h
 mov dx, 80
 
 reset:
-    mov si, 0               ; Register `si` will serve as the contraint for register `di` (si > di)
+    mov si, 0               ; Register `si` will serve as the constraint for register `di` (si > di)
 
 init:
     mov di, si              ; Set the value to register `si`, this register will serve as the current index
