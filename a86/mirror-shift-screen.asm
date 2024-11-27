@@ -1,30 +1,66 @@
 mov ds, 0b800h
 
+mov dx, 0
+mov di, 0
+
+init:
+    mov si, di
+    add si, 158
+    mov cx, 0
+
+mirror:
+    mov al, b[ds:di]
+    mov b[ds:si], al
+
+	mov al, b[ds:di + 1]
+	mov b[ds:si + 1], al
+
+	add di, 2
+    dec si, 2
+
+    inc cx
+    cmp cx, 40
+    jl mirror
+
+    add di, 80
+    cmp di, 4000
+    jl init
+
 mov dx, 80
 
 reset:
-    mov si, 0               ; Register `si` will serve as the constraint for register `di` (si > di)
+    mov di, 158
+    mov si, 160
 
-init:
-    mov di, si              ; Set the value to register `si`, this register will serve as the current index
-    add di, 158             ; Add the offset, so we reach the end of the screen
-    mov al, b[ds:di]        ; Copy the last character
+    mov al, b[ds:di]
+	mov ah, b[ds:di + 1]
+
+    mov bl, b[ds:si]
+	mov bh, b[ds:si + 1]
 
 shift:
-    mov cl, b[ds:di - 2]    ; Copy the second to the last character from the current index
-    mov b[ds:di], cl        ; Display the copied character to the current index
+    mov cl, b[ds:di - 2]
+    mov b[ds:di], cl
+	mov cl, b[ds:di - 1]
+	mov b[ds:di + 1], cl
+
+    mov cl, b[ds:si + 2]
+    mov b[ds:si], cl
+    mov cl, b[ds:si + 3]
+    mov b[ds:si + 1], cl
 
     sub di, 2
-    cmp di, si
+    add si, 2
+    cmp di, 0
     jg shift
 
-    mov b[ds:di], al        ; Display the last character, which was stored on label `init`
+    mov b[ds:di], al
+	mov b[ds:di + 1], ah
 
-    add si, 160
-    cmp si, 4000
-    jl init
+    mov b[ds:si], bl
+	mov b[ds:si + 1], ah
 
-    mov cx, 0ffffh          ; Just for quick delay
+    mov cx, 0ffffh
 
 delay_loop:
   loop delay_loop
@@ -32,5 +68,5 @@ delay_loop:
 dec dx
 cmp dx, 0
 jg reset
-
+    
 int 20h
