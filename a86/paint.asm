@@ -10,9 +10,7 @@ paint_start:
 	je paint_end
 	call change_color
 
-	push ax
 	call get_mouse_index
-	pop ax
 	mov byte [ds:di + 1], al
 
 	jmp paint_start
@@ -45,6 +43,7 @@ change_color:
 		ret
 
 get_mouse_index:
+	push ax
 	mov ax, 3h
 	int 33h
 
@@ -55,4 +54,5 @@ get_mouse_index:
 	add dx, cx
 
 	mov di, dx
+	pop ax
 	ret
