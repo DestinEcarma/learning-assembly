@@ -18,7 +18,7 @@ read_loop:
     cmp al, 0Dh				; If the user presses enter, we are done reading 0Dh is `\r` in ASCII
     je read_done
     imul bx, 10				; Simple number manipulation, simply adding offset for the new digit
-	sub ax, 304				; This is necessary, not sure why 304 is being added to a single digit, 1 would be 305 and 2 would be 306 ... 9 would be 313
+	and ax, 0Fh				; Masking the lower 4 bits, since we are reading a single digit at a time
 	add bx, ax
     jmp read_loop
 read_done: 
