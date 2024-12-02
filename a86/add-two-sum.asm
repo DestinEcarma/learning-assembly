@@ -48,4 +48,10 @@ print_digits:
     mov ah, 02h				; DOS interrupt to print the character, register dl will be used here, that is why we are using the register dx
     int 21h					; Call the interrupt
     loop print_digits		; Where register cx is being used, we could just simply check if sp (stack) is empty, but why bother
+	mov dl, 0Dh				; Carriage return character (move to the beginning of the line)
+	mov ah, 02h
+	int 21h
+	mov dl, 0Ah				; New line character (move to the next line)
+	mov ah, 02h
+	int 21h
     ret
