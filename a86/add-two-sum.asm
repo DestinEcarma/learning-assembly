@@ -41,7 +41,7 @@ print_loop:
     add dx, '0'				; Convert the digit to ASCII
     push dx					; Push the digit to the stack
     inc cx					; Seems like it's not necessary, but it's being used to loop through the digits
-    test ax, ax
+    test ax, ax				; This is similar to cmp ax, 0, cmp is an arithmetic operation, test is a logical operation
     jnz print_loop
 print_digits:
     pop dx					; Pop the digit from the stack
