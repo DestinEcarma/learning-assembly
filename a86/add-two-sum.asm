@@ -30,10 +30,10 @@ print_integer:
     xor cx, cx
     cmp ax, 0
     jne print_loop			; If the number is not 0, print the digit else print 0
-    mov dl, '0'
-    mov ah, 02h
-    int 21h
-    ret
+    mov dx, '0'
+	push dx
+	inc cx
+	jmp print_digits
 print_loop:
     xor dx, dx
     mov bx, 10				; Dividing by 10 to get the digits
