@@ -1,9 +1,9 @@
 call read_integer
-mov bx, ax				; Save the first number
+mov bx, ax					; Save the first number
 
-call read_integer		; Second number is already in ax
+call read_integer			; Second number is already in ax
 
-add ax, bx				; Add the two numbers
+add ax, bx					; Add the two numbers
 call print_integer
 
 int 20h
