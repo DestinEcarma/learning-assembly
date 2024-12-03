@@ -9,9 +9,7 @@ paint_start:
 	cmp al, 30h					; Check if the key is 0, if it is, exit
 	je paint_end
 	call change_color
-
-	call get_mouse_index
-	mov byte [ds:di + 1], al	; Change the color of the pixel
+    call wait_click_start
 
 	jmp paint_start
 paint_end:
@@ -30,6 +28,7 @@ change_color:
 	je green
 	cmp al, 33h
 	je blue
+    mov al, 00h
 	ret
 
 	red:
@@ -42,17 +41,28 @@ change_color:
 		mov al, 11h
 		ret
 
-get_mouse_index:
-	push ax						; Save the value of ax, since this was for the color to be changed
-	mov ah, 3h					; Get the mouse position
-	int 33h						; Call the interrupt to get the mouse position
+wait_click_start:
+    push ax                     ; Save the value of ax, since this was for the color to be changed
+    mov ax, 1h                  ; Show mouse cursor
+    int 33h                     ; Call interruption to show mouse coursor
+wait_click_loop:
+    mov ax, 3h                  ; Get the mouse status
+    int 33h                     ; Call the interrupt to get the mouse position
+    test bx, 1                  ; Check for left mouse click
+    jnz click_fired
 
-	shr cx, 2					; Divide by 4 to get the x coordinate
-	shr dx, 2					; Divide by 4 to get the y coordinate
+    jmp wait_click_loop
+click_fired:
+    mov ax, 0h                  ; Reset mouse
+    int 33h                     ; Call interruption to reset mouse
 
-	imul dx, 80					; Multiply by 80 to get the index
-	add dx, cx					; Add the x coordinate to the index
+    shr cx, 2                   ; Divide by 4 to get the x coordinate
+    shr dx, 2                   ; Divide by 4 to get the y coordinate
 
-	mov di, dx					; Move the index to di
-	pop ax						; Restore the value of ax
-	ret
+    imul dx, 80                 ; Multiply by 80 to get the index
+    add dx, cx                  ; Add the x coordindate to the index
+
+    pop ax                      ; Restore the value of ax
+    mov di, dx                  ; Move the index to di
+    mov b[ds:di + 1], al        ; Change the color of the pixel
+    ret
