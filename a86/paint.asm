@@ -1,45 +1,45 @@
-mov ds, 0B800h
+    mov ds, 0B800h
 
-call paint_start
-int 20h
+    call paint_start
+    int 20h
 
 paint_start:
-	mov ah, 1h					; Wait for key to be pressed
-	int 21h						; Call the interrupt to get the key
-	cmp al, 30h					; Check if the key is 0, if it is, exit
-	je paint_end
-	call change_color
+    mov ah, 1h                  ; Wait for key to be pressed
+    int 21h                     ; Call the interrupt to get the key
+    cmp al, 30h                 ; Check if the key is 0, if it is, exit
+    je paint_end
+    call change_color
     call wait_click_start
 
-	jmp paint_start
+    jmp paint_start
 paint_end:
-	mov dl, 0Dh					; Carriage return character (move to the beginning of the line)
-	mov ah, 02h
-	int 21h
-	mov dl, 0Ah					; New line character (move to the next line)
-	mov ah, 02h
-	int 21h
-	ret
+    mov dl, 0Dh                 ; Carriage return character (move to the beginning of the line)
+    mov ah, 02h
+    int 21h
+    mov dl, 0Ah                 ; New line character (move to the next line)
+    mov ah, 02h
+    int 21h
+    ret
 
 change_color:
-	cmp al, 31h
-	je red
-	cmp al, 32h
-	je green
-	cmp al, 33h
-	je blue
+    cmp al, 31h
+    je red
+    cmp al, 32h
+    je green
+    cmp al, 33h
+    je blue
     mov al, 00h
-	ret
+    ret
 
-	red:
-		mov al, 44h
-		ret
-	green:
-		mov al, 22h
-		ret
-	blue:
-		mov al, 11h
-		ret
+red:
+    mov al, 44h
+    ret
+green:
+    mov al, 22h
+    ret
+blue:
+    mov al, 11h
+    ret
 
 wait_click_start:
     push ax                     ; Save the value of ax, since this was for the color to be changed
