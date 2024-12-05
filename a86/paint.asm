@@ -1,5 +1,5 @@
 mov ah, 0h                      ; Configure graphics mode
-mov al, 13h                     ; Set mode to 13h (320x200)
+mov al, 13h                     ; Set mode to 13h (320x200) Pixel Resolution
 int 10h                         ; Call the interrupt to update graphics mode
 
 mov es, 0A000h                  ; Address of video memory
@@ -7,7 +7,7 @@ mov es, 0A000h                  ; Address of video memory
 call paint_start
 
 mov ah, 0h                      ; Configure graphics mode
-mov al, 3h                      ; Set mode to 13h (320x200)
+mov al, 3h                      ; Set mode to 3h (80x20) Text resolution
 int 10h                         ; Call the interrupt to update graphics mode
 
 int 20h
@@ -17,17 +17,12 @@ paint_start:
     int 21h                     ; Call the interrupt to get the key
     cmp al, 30h                 ; Check if the key is 0, if it is, exit
     je paint_end
+
     call change_color
     call wait_click_start
 
     jmp paint_start
 paint_end:
-    mov dl, 0Dh                 ; Carriage return character (move to the beginning of the line)
-    mov ah, 02h
-    int 21h
-    mov dl, 0Ah                 ; New line character (move to the next line)
-    mov ah, 02h
-    int 21h
     ret
 
 change_color:
