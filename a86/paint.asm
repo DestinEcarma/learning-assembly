@@ -1,7 +1,16 @@
-    mov ds, 0B800h
+mov ah, 0h                      ; Configure graphics mode
+mov al, 13h                     ; Set mode to 13h (320x200)
+int 10h                         ; Call the interrupt to update graphics mode
 
-    call paint_start
-    int 20h
+mov es, 0A000h                  ; Address of video memory
+
+call paint_start
+
+mov ah, 0h                      ; Configure graphics mode
+mov al, 3h                      ; Set mode to 13h (320x200)
+int 10h                         ; Call the interrupt to update graphics mode
+
+int 20h
 
 paint_start:
     mov ah, 1h                  ; Wait for key to be pressed
@@ -32,13 +41,13 @@ change_color:
     ret
 
 red:
-    mov al, 44h
+    mov al, 4h
     ret
 green:
-    mov al, 22h
+    mov al, 2h
     ret
 blue:
-    mov al, 11h
+    mov al, 1h
     ret
 
 wait_click_start:
@@ -47,22 +56,31 @@ wait_click_start:
     int 33h                     ; Call interruption to show mouse coursor
 wait_click_loop:
     mov ax, 3h                  ; Get the mouse status
-    int 33h                     ; Call the interrupt to get the mouse position
-    test bx, 1                  ; Check for left mouse click
-    jnz click_fired
+    int 33h                     ; Call the interrupt to get the mouse status (this also include position)
+    test bx, 1                  ; Check for left mouse button down
+    jnz click_down
 
     jmp wait_click_loop
-click_fired:
-    mov ax, 0h                  ; Reset mouse
+click_down_reset:
+    mov ax, 1h                  ; Show mouse cursor
+    int 33h                     ; Call the interrupt to show mouse coursor
+click_down:
+    mov ax, 2h                  ; Hide mouse cursor
     int 33h                     ; Call interruption to reset mouse
 
-    shr cx, 2                   ; Divide by 4 to get the x coordinate
-    shr dx, 2                   ; Divide by 4 to get the y coordinate
+    shr cx, 1                   ; Divide by 2 to get the x coordinate
 
-    imul dx, 80                 ; Multiply by 80 to get the index
+    imul dx, 320                ; Multiply y coordinate by 320 to get the index
     add dx, cx                  ; Add the x coordindate to the index
 
     pop ax                      ; Restore the value of ax
     mov di, dx                  ; Move the index to di
-    mov b[ds:di + 1], al        ; Change the color of the pixel
+    mov es:[di], al             ; Change the color of the pixel
+    push ax                     ; Save the value of ax, again
+    
+    mov ax, 3h                  ; Get mouse status
+    int 33h                     ; Call the interrupt to get the mouse status (this also include position)
+    test bx, 1                  ; Check for left mouse button down
+    jnz click_down_reset        ; Repeat the process until left mouse button is up
+    pop ax
     ret
