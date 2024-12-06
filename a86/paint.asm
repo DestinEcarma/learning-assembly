@@ -2,8 +2,6 @@ mov ah, 0h                      ; Configure graphics mode
 mov al, 13h                     ; Set mode to 13h (320x200) Pixel Resolution
 int 10h                         ; Call the interrupt to update graphics mode
 
-mov es, 0A000h                  ; Address of video memory
-
 call paint_start
 
 mov ah, 0h                      ; Configure graphics mode
@@ -15,67 +13,66 @@ int 20h
 paint_start:
     mov ah, 1h                  ; Wait for key to be pressed
     int 21h                     ; Call the interrupt to get the key
-    cmp al, 30h                 ; Check if the key is 0, if it is, exit
+    cmp al, 1Bh                 ; Check if the key is ESC, if it is, exit
     je paint_end
 
     call change_color
-    call wait_click_start
+    call wait_m1_down
 
     jmp paint_start
 paint_end:
     ret
 
 change_color:
-    cmp al, 31h
-    je red
-    cmp al, 32h
-    je green
-    cmp al, 33h
-    je blue
-    mov al, 00h
+    sub al, '0'                 ; Convert the ASCII value to integer
+    cmp al, 2                   ; Check if the input is greater than 2
+    jg invalid_color
+
+    mov di, ax                  ; Set the value of di to the value of input
+    and di, 3                   ; Mask the value of di to 3 since we only want 1, 2 and 3 indices
+    mov al, [color_table + di]  ; Get the color from the color table
+    ret
+invalid_color:
+    xor al, al
     ret
 
-red:
-    mov al, 4h
-    ret
-green:
-    mov al, 2h
-    ret
-blue:
-    mov al, 1h
-    ret
-
-wait_click_start:
+wait_m1_down:
     push ax                     ; Save the value of ax, since this was for the color to be changed
     mov ax, 1h                  ; Show mouse cursor
-    int 33h                     ; Call interruption to show mouse coursor
-wait_click_loop:
-    mov ax, 3h                  ; Get the mouse status
-    int 33h                     ; Call the interrupt to get the mouse status (this also include position)
-    test bx, 1                  ; Check for left mouse button down
-    jnz click_down
-
-    jmp wait_click_loop
-click_down_reset:
-    mov ax, 1h                  ; Show mouse cursor
     int 33h                     ; Call the interrupt to show mouse coursor
-click_down:
-    mov ax, 2h                  ; Hide mouse cursor
-    int 33h                     ; Call interruption to reset mouse
+wait_m1_down_loop:
+    mov ax, 3h                  ; Get mouse status
+    int 33h                     ; Call the interrupt to get the mouse status
+    test bx, bx                 ; Check if the left mouse button is down
+    jnz m1_down
 
+    jmp wait_m1_down_loop
+m1_down:
     shr cx, 1                   ; Divide by 2 to get the x coordinate
 
     imul dx, 320                ; Multiply y coordinate by 320 to get the index
     add dx, cx                  ; Add the x coordindate to the index
+    mov di, dx                  ; Move the index to di
+
+    mov ax, 2h                  ; Hide mouse cursor (this is to prevent pixel overwriting)
+    int 33h                     ; Call the interrupt to hide the mouse cursor
 
     pop ax                      ; Restore the value of ax
-    mov di, dx                  ; Move the index to di
+    mov es, 0A000h              ; Address of video memory
     mov es:[di], al             ; Change the color of the pixel
-    push ax                     ; Save the value of ax, again
-    
+    push ax                     ; Save the value of ax again
+
+    mov ax, 1h                  ; Show mouse cursor
+    int 33h                     ; Call the interrupt to show mouse cursor
+
     mov ax, 3h                  ; Get mouse status
-    int 33h                     ; Call the interrupt to get the mouse status (this also include position)
-    test bx, 1                  ; Check for left mouse button down
-    jnz click_down_reset        ; Repeat the process until left mouse button is up
-    pop ax
+    int 33h                     ; Call the interrupt to get the mouse status
+    test bx, bx                 ; Check if the left mouse button is still down
+    jnz m1_down                 ; If it is, keep drawing the pixel
+
+    pop ax                      ; Restore the value of ax
+    mov ax, 2h                  ; Hide mouse cursor
+    int 33h                     ; Call interruption to reset mouse
     ret
+
+color_table db 4, 2, 1          ; Red, Green, Blue
