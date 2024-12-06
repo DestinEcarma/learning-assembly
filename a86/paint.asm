@@ -18,14 +18,15 @@ paint_start:
 
     call change_color
     call wait_m1_down
-
     jmp paint_start
 paint_end:
     ret
 
 change_color:
-    sub al, '0'                 ; Convert the ASCII value to integer
-    cmp al, 2                   ; Check if the input is greater than 2
+    sub al, '1'                 ; Convert the ASCII value to integer
+    cmp al, 0                   ; Check if input is less than 0
+    jl invalid_color
+    cmp al, 2                   ; Check if input is within 0-2
     jg invalid_color
 
     mov di, ax                  ; Set the value of di to the value of input
@@ -49,7 +50,6 @@ wait_m1_down_loop:
     jmp wait_m1_down_loop
 m1_down:
     shr cx, 1                   ; Divide by 2 to get the x coordinate
-
     imul dx, 320                ; Multiply y coordinate by 320 to get the index
     add dx, cx                  ; Add the x coordindate to the index
     mov di, dx                  ; Move the index to di
